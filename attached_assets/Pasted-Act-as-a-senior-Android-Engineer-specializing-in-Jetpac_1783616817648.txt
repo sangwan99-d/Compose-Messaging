@@ -1,0 +1,20 @@
+Act as a senior Android Engineer specializing in Jetpack Compose and highly fluid animations. I have updated my architecture to reflect clean, state-driven flows. I now need you to generate the code files for the introductory sequence of the application, ensuring it adheres strictly to our 'Geometric Balance' design theme (Material 3 dark-themed styling, spacious layout properties, and robust state collections).
+
+Please provide the Kotlin source code for the following two components:
+
+1. SplashScreen.kt:
+- Set up a full-screen Box composable with a dark background (`MaterialTheme.colorScheme.background`).
+- In the exact center, integrate an animated 3D vector layout using the Lottie Compose library (`com.airbnb.android:lottie-compose`), pointing to a local file placeholder (`R.raw.logo_3d_anim`).
+- Create an inner state `showDesignerText` (Boolean) initialized to false. Use a LaunchedEffect to trigger `showDesignerText = true` after a 500ms delay.
+- Use `AnimatedVisibility` with a smooth `fadeIn()` animation wrapper to display your designer credit at the bottom center (`Alignment.BottomCenter`, padded 48.dp from the bottom edge).
+- The designer text layout must be stacked vertically: A small, high-tracking subheader displaying "DESIGNED BY" in a muted alpha tint, followed by a bold, elegant Material 3 Text line reading: "Sahil Sangwan".
+- Use a trailing delay matching the asset duration (e.g., 2500ms total), then invoke an `onAnimationFinished: () -> Unit` callback lambda.
+
+2. AppNavGraph.kt (Update):
+- Implement the application navigation host using Jetpack Compose Navigation (`NavHost` and `rememberNavController`).
+- Define the `startDestination` route explicitly as "splash_screen".
+- Inside the "splash_screen" composable destination, call `SplashScreen(onAnimationFinished = { ... })`. 
+- When the callback fires, safely navigate to the main chat layout route ("main_layout") and execute a clear backstack routine (`popUpTo("splash_screen") { inclusive = true }`) so hitting the physical Android back button never restarts the animation.
+- Inside the "main_layout" composable destination, map the state observing logic using modern `collectAsStateWithLifecycle()` on the ViewModel stream to safely preserve resource collection when the app drops to the background.
+
+Please write clean, modular, production-ready code with helpful comments.

@@ -1,7 +1,8 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Image, StyleSheet, Text, View } from 'react-native';
 import Animated, {
   Easing,
+  FadeIn,
   useAnimatedStyle,
   useSharedValue,
   withDelay,
@@ -17,6 +18,11 @@ import { useColors } from '@/hooks/useColors';
  * mark fades as we hand off to the main app — evoking the "unlocking"
  * moment of an encrypted handshake completing.
  *
+ * This overlay is never pushed onto the router's navigation stack (see
+ * app/_layout.tsx), so there is no back-stack entry to pop — the back
+ * button can never re-trigger it, which is a stronger guarantee than a
+ * `popUpTo(inclusive = true)` navigation route would give.
+ *
  * `onFinished` fires after a fixed ~2200ms sequence, mirroring the
  * Lottie-finish-or-timeout pattern from a native implementation.
  */
@@ -31,6 +37,10 @@ export function SplashAnimation({
   const ringScale = useSharedValue(0.8);
   const ringOpacity = useSharedValue(0);
   const containerOpacity = useSharedValue(1);
+  // Mirrors a `showDesignerText` flag flipped from a LaunchedEffect after
+  // a fixed delay: the credit line fades in partway through the intro
+  // rather than appearing immediately with the logo.
+  const [showDesignerText, setShowDesignerText] = useState(false);
 
   useEffect(() => {
     opacity.value = withTiming(1, { duration: 260 });
@@ -56,8 +66,12 @@ export function SplashAnimation({
       }),
     );
 
+    const designerTimer = setTimeout(() => setShowDesignerText(true), 500);
     const timeout = setTimeout(onFinished, 2200);
-    return () => clearTimeout(timeout);
+    return () => {
+      clearTimeout(designerTimer);
+      clearTimeout(timeout);
+    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -103,6 +117,22 @@ export function SplashAnimation({
           End-to-end encrypted
         </Text>
       </View>
+
+      {showDesignerText ? (
+        <Animated.View
+          entering={FadeIn.duration(450)}
+          style={styles.designerCredit}
+        >
+          <Text
+            style={[styles.designerLabel, { color: colors.mutedForeground }]}
+          >
+            DESIGNED BY
+          </Text>
+          <Text style={[styles.designerName, { color: colors.foreground }]}>
+            Sahil Sangwan
+          </Text>
+        </Animated.View>
+      ) : null}
     </Animated.View>
   );
 }
@@ -146,5 +176,23 @@ const styles = StyleSheet.create({
   subtitle: {
     fontSize: 13,
     fontFamily: 'Inter_500Medium',
+  },
+  designerCredit: {
+    position: 'absolute',
+    bottom: 48,
+    left: 0,
+    right: 0,
+    alignItems: 'center',
+    gap: 4,
+  },
+  designerLabel: {
+    fontSize: 11,
+    fontFamily: 'Inter_600SemiBold',
+    letterSpacing: 2,
+    opacity: 0.7,
+  },
+  designerName: {
+    fontSize: 16,
+    fontFamily: 'Inter_700Bold',
   },
 });
