@@ -1,0 +1,1 @@
+- [Expo dark-mode-by-default](expo-dark-default.md) — scaffold's useColors() only goes dark on system pref; force it by returning the dark palette unconditionally instead.
